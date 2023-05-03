@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart' as xml;
 
 void main() {
   runApp(const MyApp());
@@ -51,15 +53,71 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final num1Controller = TextEditingController();
   final num2Controller = TextEditingController();
+  var isCalling = false;
 
-  calculateSOAP() {
+  callSOAP(num1, num2) async {
+    if (isCalling) {
+      return;
+    }
+
+    setState(() {
+      isCalling = true;
+    });
+
+    var soapEnv = '''
+<?xml version="1.0" encoding="utf-8"?>
+<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+  <soap12:Body>
+    <Add xmlns="http://tempuri.org/">
+      <intA>$num1</intA>
+      <intB>$num2</intB>
+    </Add>
+  </soap12:Body>
+</soap12:Envelope>
+''';
+
+    http.Response response = await http.post(
+        Uri(scheme: 'http', host: 'dneonline.com', path: '/calculator.asmx'),
+        headers: {
+          "Content-Type": "text/xml; charset=utf-8",
+          "Host": "www.dneonline.com"
+        },
+        body: soapEnv);
+
+    var rawResponseXML = response.body;
+
+    xml.XmlDocument parsedXml = xml.XmlDocument.parse(rawResponseXML);
+    var res = parsedXml
+        .getElement("soap:Envelope")
+        ?.getElement("soap:Body")
+        ?.getElement("AddResponse")
+        ?.getElement("AddResult")!
+        .text;
+    // var val = parsedXml.getAttribute("AddResult");
+    announce("Result is $res");
+
+    setState(() {
+      isCalling = false;
+    });
+  }
+
+  announce(text) {
     showDialog(
         context: context,
         builder: ((context) {
           return AlertDialog(
-            content: Text("${num1Controller.text} + ${num2Controller.text}"),
+            content: Text("$text"),
           );
         }));
+  }
+
+  calculate() {
+    if (num1Controller.text == "" || num2Controller.text == "") {
+      announce("Input must not be empty");
+      return;
+    }
+    //call web services
+    callSOAP(num1Controller.text, num2Controller.text);
   }
 
   @override
@@ -101,14 +159,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   border: UnderlineInputBorder(), labelText: 'Enter number 2'),
             ),
             ElevatedButton(
-                onPressed: calculateSOAP, child: const Text("Add Numbers")),
+                onPressed: calculate, child: const Text("Add Numbers")),
             Container(
-                margin: const EdgeInsets.only(top: 50),
-                child: const Text(
-                  "Result: 54",
-                  textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 27),
-                ))
+              margin: const EdgeInsets.only(top: 50),
+              child: isCalling
+                  ? Row(children: const [
+                      CircularProgressIndicator(),
+                      Text("Calling Online WebServices(API)")
+                    ])
+                  : Container(),
+            )
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
