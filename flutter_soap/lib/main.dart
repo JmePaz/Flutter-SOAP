@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'add_calc.dart';
 import 'phone_load.dart';
 
@@ -14,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'PAZ LAB 3-4',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -27,7 +26,9 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const PhoneLoad(),
+      home: const MyHomePage(
+        title: 'PAZ LAB 3-4',
+      ),
     );
   }
 }
@@ -56,6 +57,11 @@ class _MyHomePageState extends State<MyHomePage> {
         .push(MaterialPageRoute(builder: (context) => const AddCalc()));
   }
 
+  goToUserDefineSOAP() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const PhoneLoad()));
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -72,6 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Container(
         padding: const EdgeInsets.all(7),
+        width: double.infinity,
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
@@ -82,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: goToPublicSOAP,
                 child: const Text("Public SOAP DEMO")),
             ElevatedButton(
-                onPressed: () => {},
+                onPressed: goToUserDefineSOAP,
                 child: const Text("User-Defined SOAP DEMO"))
           ],
         ),
