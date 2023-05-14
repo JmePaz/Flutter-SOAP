@@ -34,7 +34,7 @@ class _PhoneLoadState extends State<PhoneLoad> {
           .post(
               Uri(
                   scheme: 'http',
-                  host: '192.168.1.5',
+                  host: '1.1.1.1', // the server host (I used mine localhost since this a user defined SOAP using PHP nusoap)
                   path: '/IT140P_LABExer4/service.php'),
               headers: {
                 "Content-Type": "text/xml; charset=ISO-8859-1",
